@@ -212,6 +212,6 @@ Please review our CONTRIBUTING.md before starting.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Contact
-Project Lead:
+- Project Lead:
 Ashok Kumar Reddy Naguri
-For questions or volunteer contributions, please reach out.
+* For questions or volunteer contributions, please reach out.
