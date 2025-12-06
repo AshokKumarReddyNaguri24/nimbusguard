@@ -1,0 +1,43 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5433:5432"
+    volumes:
+      - ../data/postgres:/var/lib/postgresql/data/pgdata
+    networks:
+      - nimbusguard
+
+  timescaledb:
+    container_name: timescaledb
+    image: timescale/timescaledb-ha:latest-pg17
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../data/timescaledb:/var/lib/postgresql/data
+    networks:
+      - nimbusguard
+
+  redis:
+    container_name: redis
+    image: redis:8.4.0-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - ../data/redis:/data
+    networks:
+      - nimbusguard
+
+networks:
+  nimbusguard:
+    driver: bridge
