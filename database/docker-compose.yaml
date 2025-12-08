@@ -5,17 +5,17 @@ services:
     environment:
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin
-      PGDATA: /var/lib/postgresql/data/pgdata
+      PGDATA: /var/lib/postgresql/data
     ports:
       - "5433:5432"
     volumes:
-      - ../data/postgres:/var/lib/postgresql/data/pgdata
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - nimbusguard
 
   timescaledb:
     container_name: timescaledb
-    image: timescale/timescaledb-ha:latest-pg17
+    image: timescale/timescaledb:latest-pg17
     environment:
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin
@@ -23,7 +23,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ../data/timescaledb:/var/lib/postgresql/data
+      - timescaledb_data:/var/lib/postgresql/data
     networks:
       - nimbusguard
 
@@ -34,10 +34,15 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - ../data/redis:/data
+      - redis_data:/data
     networks:
       - nimbusguard
 
 networks:
   nimbusguard:
     driver: bridge
+
+volumes:
+  postgres_data:
+  timescaledb_data:
+  redis_data:

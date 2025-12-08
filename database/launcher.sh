@@ -5,12 +5,6 @@ echo "────────────────────────�
 echo "   🐳  NimbusGuard Service Launcher"
 echo "────────────────────────────────────────────"
 
-echo "Preparing host volumes..."
-mkdir -p ../data/postgres
-mkdir -p ../data/timescaledb
-mkdir -p ../data/redis
-echo "Host volumes ready."
-
 echo "Checking Docker status..."
 if ! docker info > /dev/null 2>&1; then
   echo "Docker is not running! Please start Docker Desktop."
