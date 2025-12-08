@@ -5,13 +5,17 @@ services:
     environment:
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin
-      PGDATA: /var/lib/postgresql/data
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - nimbusguard
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   timescaledb:
     container_name: timescaledb
@@ -26,6 +30,29 @@ services:
       - timescaledb_data:/var/lib/postgresql/data
     networks:
       - nimbusguard
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@nimbusguard.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./servers.json:/pgadmin4/servers.json:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - timescaledb
+      - postgres
+    networks:
+      - nimbusguard
+
 
   redis:
     container_name: redis
@@ -37,6 +64,11 @@ services:
       - redis_data:/data
     networks:
       - nimbusguard
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   nimbusguard:
@@ -45,4 +77,5 @@ networks:
 volumes:
   postgres_data:
   timescaledb_data:
+  pgadmin_data:
   redis_data:
