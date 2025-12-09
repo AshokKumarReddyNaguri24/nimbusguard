@@ -1,0 +1,24 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Timescale",
+      "Group": "Databases",
+      "Host": "timescaledb",
+      "Port": 5432,
+      "MaintenanceDB": "postgres",
+      "Username": "admin",
+      "Password": "admin",
+      "SSLMode": "prefer"
+    },
+    "2": {
+      "Name": "Postgres",
+      "Group": "Databases",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "postgres",
+      "Username": "admin",
+      "Password": "admin",
+      "SSLMode": "prefer"
+    }
+  }
+}
