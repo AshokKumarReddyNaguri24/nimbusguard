@@ -1,5 +1,13 @@
 import numpy as np
 
+try:
+    from data_loader import load_metrics
+    CAN_LOAD_REAL_DATA = True
+except:
+    CAN_LOAD_REAL_DATA = False
+    print("⚠ Data loader not available, using dummy data only")
+
+
 def generate_dummy_data(size=100):
     np.random.seed(42)
     normal_data = np.random.normal(50, 5, size) # Normal data around mean=50
@@ -32,12 +40,26 @@ def detect_anomalies(data, baseline, threshold=2):
                 'value': value,
                 'z_score': z_score
             })
-    
+            
     return anomalies
 
-
 if __name__ == "__main__":
-    data = generate_dummy_data()
+    USE_REAL_DATA = False  # Set to True when you want to test with real data
+    
+    if USE_REAL_DATA and CAN_LOAD_REAL_DATA:
+        print("Loading REAL data from TimescaleDB...")
+        df = load_metrics(metric_type="cpu", hours=24)
+        
+        if not df.empty:
+            data = df['value'].values
+            print(f"Loaded {len(data)} real data points")
+        else:
+            print("No real data found, using dummy data")
+            data = generate_dummy_data()
+    else:
+        print("Using DUMMY data")
+        data = generate_dummy_data()
+
     print(f"Generated {len(data)} data points")
     
     baseline = calculate_baseline(data)
