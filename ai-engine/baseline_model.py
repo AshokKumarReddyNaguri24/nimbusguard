@@ -7,7 +7,6 @@ except:
     CAN_LOAD_REAL_DATA = False
     print("⚠ Data loader not available, using dummy data only")
 
-
 def generate_dummy_data(size=100):
     np.random.seed(42)
     normal_data = np.random.normal(50, 5, size) # Normal data around mean=50
@@ -39,8 +38,7 @@ def detect_anomalies(data, baseline, threshold=2):
                 'index': i,
                 'value': value,
                 'z_score': z_score
-            })
-            
+            })            
     return anomalies
 
 if __name__ == "__main__":
@@ -59,7 +57,12 @@ if __name__ == "__main__":
     else:
         print("Using DUMMY data")
         data = generate_dummy_data()
+    
+    return anomalies
 
+
+if __name__ == "__main__":
+    data = generate_dummy_data()
     print(f"Generated {len(data)} data points")
     
     baseline = calculate_baseline(data)
