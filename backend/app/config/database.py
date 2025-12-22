@@ -1,0 +1,42 @@
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from app.config.settings import settings
+
+# --- 1. INVENTORY CONNECTION (PostgreSQL) ---
+SQLALCHEMY_DATABASE_URL_INVENTORY = (
+    f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
+    f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+)
+
+engine_inventory = create_engine(SQLALCHEMY_DATABASE_URL_INVENTORY)
+SessionLocalInventory = sessionmaker(autocommit=False, autoflush=False, bind=engine_inventory)
+
+Base = declarative_base() # Base for ORM models (Inventory)
+
+def get_db_inventory():
+    db = SessionLocalInventory()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# --- 2. METRICS CONNECTION (TimescaleDB) ---
+SQLALCHEMY_DATABASE_URL_METRICS = (
+    f"postgresql://{settings.TIMESCALE_USER}:{settings.TIMESCALE_PASSWORD}"
+    f"@{settings.TIMESCALE_HOST}:{settings.TIMESCALE_PORT}/{settings.TIMESCALE_DB}"
+)
+
+engine_metrics = create_engine(SQLALCHEMY_DATABASE_URL_METRICS)
+SessionLocalMetrics = sessionmaker(autocommit=False, autoflush=False, bind=engine_metrics)
+
+def get_db_metrics():
+    db = SessionLocalMetrics()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Backward compatibility & helpers
+SessionLocal = SessionLocalInventory
+engine = engine_inventory
