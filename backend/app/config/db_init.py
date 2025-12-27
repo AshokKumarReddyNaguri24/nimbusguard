@@ -32,6 +32,24 @@ def init_inventory():
             """)
         else:
             print("'devices' table already exists.")
+
+        # Check/Create Alerts Table
+        cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'alerts');")
+        if not cursor.fetchone()[0]:
+            print("Creating 'alerts' table...")
+            cursor.execute("""
+                CREATE TABLE alerts (
+                    id SERIAL PRIMARY KEY,
+                    device_id INTEGER,
+                    metric_type VARCHAR(50),
+                    value DOUBLE PRECISION,
+                    timestamp TIMESTAMPTZ DEFAULT NOW(),
+                    description TEXT,
+                    resolved BOOLEAN DEFAULT FALSE
+                );
+            """)
+        else:
+            print("'alerts' table already exists.")
         
         cursor.close()
         conn.close()

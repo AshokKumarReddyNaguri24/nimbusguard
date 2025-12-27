@@ -9,3 +9,5 @@ pysnmp<6
 pycryptodomex
 pydantic-settings
 pyasn1<0.5.0
+pandas
+numpy
