@@ -17,14 +17,14 @@ def create_metric(metric: schemas.MetricCreate, db: Session = Depends(database.g
     try:
         current_time = datetime.utcnow()
         query = text("""
-            INSERT INTO metrics (timestamp, device_id, metric_name, metric_value)
-            VALUES (:timestamp, :device_id, :metric_name, :metric_value)
+            INSERT INTO metrics (time, device_id, metric_name, value)
+            VALUES (:time, :device_id, :metric_name, :value)
         """)
         db.execute(query, {
-            "timestamp": current_time, 
+            "time": current_time, 
             "device_id": metric.device_id, 
             "metric_name": metric.metric_name, 
-            "metric_value": metric.value
+            "value": metric.metric_value
         })
         db.commit()
         return {"status": "success"}

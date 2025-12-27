@@ -8,23 +8,25 @@ from app.models.device import Device
 from sqlalchemy.orm import Session
 from datetime import datetime
 
+from app.config.settings import settings
+
 # --- 1. DATA LOADER (Duplicated from ai-engine/data_loader.py to avoid import issues) ---
 def get_db_connection():
     return psycopg2.connect(
-        host=os.getenv('TIMESCALE_DB_HOST', 'timescaledb'),
-        port=os.getenv('TIMESCALE_DB_PORT', '5432'),
-        database=os.getenv('TIMESCALE_DB_NAME', 'postgres'),
-        user=os.getenv('TIMESCALE_DB_USER', 'admin'),
-        password=os.getenv('TIMESCALE_DB_PASS', 'admin')
+        host=settings.TSDB_HOST,
+        port=settings.TSDB_PORT,
+        database=settings.TSDB_NAME,
+        user=settings.TSDB_USER,
+        password=settings.TSDB_PASS
     )
 
 def load_metrics(device_id=None, metric_type=None, hours=24):
     try:
         conn = get_db_connection()
         query = """ 
-            SELECT timestamp, device_id, metric_type, value  
+            SELECT time, device_id, metric_name, value  
             FROM metrics
-            WHERE timestamp >= NOW() - INTERVAL '%s hours'
+            WHERE time >= NOW() - INTERVAL '%s hours'
         """
         params = [hours]
         
@@ -33,10 +35,10 @@ def load_metrics(device_id=None, metric_type=None, hours=24):
             params.append(device_id)
         
         if metric_type:
-            query += " AND metric_type = %s"
+            query += " AND metric_name = %s"
             params.append(metric_type)
         
-        query += " ORDER BY timestamp DESC"
+        query += " ORDER BY time DESC"
         
         df = pd.read_sql_query(query, conn, params=params)
         conn.close()
