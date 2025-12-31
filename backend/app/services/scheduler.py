@@ -30,5 +30,10 @@ def poll_all_devices():
 def start_scheduler():
     # Add job to run every 1 minute
     scheduler.add_job(poll_all_devices, 'interval', minutes=1)
+    
+    # Add anomaly detection job every 2 minutes
+    from app.services import anomaly_service
+    scheduler.add_job(anomaly_service.run_anomaly_checks, 'interval', minutes=2)
+    
     scheduler.start()
     print("Scheduler started...")
