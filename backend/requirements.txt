@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+psycopg2-binary
+python-dotenv
+requests
+apscheduler
+sqlalchemy
+pysnmp<6
+pycryptodomex
+pydantic-settings
+pyasn1<0.5.0
+pandas
+numpy

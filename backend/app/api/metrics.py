@@ -13,6 +13,8 @@ ANOMALY_THRESHOLDS = {
     "cpu_usage": settings.ANOMALY_THRESHOLD_CPU,
     "memory_usage": settings.ANOMALY_THRESHOLD_MEMORY,
 }
+from app.models import metric as schemas # using schemas alias for convenience or rename to models
+from datetime import datetime, timezone
 
 router = APIRouter()
 
@@ -24,7 +26,10 @@ def create_metric(metric: schemas.MetricCreate, db: Session = Depends(database.g
     # Insert into TimescaleDB
     # Using raw SQL for efficiency and simple hypertable interaction
     try:
+
         event_time = metric.time or datetime.utcnow()
+        current_time = datetime.utcnow()
+
         query = text("""
             INSERT INTO metrics (time, device_id, metric_name, value)
             VALUES (:time, :device_id, :metric_name, :value)
@@ -50,4 +55,14 @@ def create_metric(metric: schemas.MetricCreate, db: Session = Depends(database.g
     except Exception as e:
         db.rollback()
         logger.error("Metric insert failed", exc_info=True)
+
+            "time": current_time, 
+            "device_id": metric.device_id, 
+            "metric_name": metric.metric_name, 
+            "value": metric.metric_value
+        })
+        db.commit()
+        return {"status": "success"}
+    except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
