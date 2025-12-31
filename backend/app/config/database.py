@@ -5,6 +5,9 @@ from app.config.settings import settings
 
 # --- 1. INVENTORY CONNECTION (PostgreSQL) ---
 SQLALCHEMY_DATABASE_URL_INVENTORY = (
+    f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
+    f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+
     f"postgresql://{settings.POSTGRES_DB_USER}:{settings.POSTGRES_DB_PASS}"
     f"@{settings.POSTGRES_DB_HOST}:{settings.POSTGRES_DB_PORT}/{settings.POSTGRES_DB_NAME}"
 )
@@ -23,6 +26,8 @@ def get_db_inventory():
 
 # --- 2. METRICS CONNECTION (TimescaleDB) ---
 SQLALCHEMY_DATABASE_URL_METRICS = (
+    f"postgresql://{settings.TIMESCALE_USER}:{settings.TIMESCALE_PASSWORD}"
+    f"@{settings.TIMESCALE_HOST}:{settings.TIMESCALE_PORT}/{settings.TIMESCALE_DB}"
     f"postgresql://{settings.TSDB_USER}:{settings.TSDB_PASS}"
     f"@{settings.TSDB_HOST}:{settings.TSDB_PORT}/{settings.TSDB_NAME}"
 )

@@ -1,5 +1,28 @@
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from sqlalchemy import text
+from app.config import database
+from app.config.settings import settings
+from app.config.logging import get_logger
+
+logger = get_logger(__name__)
+
+
+def _check_engine(engine, label: str) -> None:
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception:
+        logger.error("Environment validation failed: %s", label, exc_info=True)
+        raise RuntimeError(f"{label} unavailable")
+
+
+def validate_environment():
+    logger.info("Validating environment connectivity...")
+    _check_engine(database.engine_inventory, "inventory_db")
+    _check_engine(database.engine_metrics, "metrics_db")
+    logger.info("Environment validation OK")
+
 from app.config.settings import settings
 
 def init_inventory():
@@ -16,6 +39,11 @@ def init_inventory():
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = conn.cursor()
 
+        logger.info("Checking Inventory DB (Postgres)...")
+
+        cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'devices');")
+        if not cursor.fetchone()[0]:
+            logger.info("Creating 'devices' table...")
         print("Checking Inventory DB (Postgres)...")
         # Check/Create Device Table
         cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'devices');")
@@ -31,6 +59,13 @@ def init_inventory():
                 );
             """)
         else:
+            logger.info("'devices' table already exists.")
+
+        cursor.close()
+        conn.close()
+    except Exception:
+        logger.error("Inventory DB init failed", exc_info=True)
+
             print("'devices' table already exists.")
 
         # Check/Create Alerts Table
@@ -56,6 +91,7 @@ def init_inventory():
     except Exception as e:
         print(f"Inventory DB init failed: {e}")
 
+
 def init_metrics():
     """Validates connectivity to TimescaleDB and ensures metrics hypertable exists."""
     conn = None
@@ -70,6 +106,11 @@ def init_metrics():
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = conn.cursor()
 
+        logger.info("Checking Metrics DB (TimescaleDB)...")
+
+        cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'metrics');")
+        if not cursor.fetchone()[0]:
+            logger.info("Creating 'metrics' table...")
         print("Checking Metrics DB (TimescaleDB)...")
         
         # Check/Create Metrics Table
@@ -86,6 +127,30 @@ def init_metrics():
                 );
             """)
         else:
+            logger.info("'metrics' table already exists.")
+
+        cursor.execute("SELECT hypertable_name FROM timescaledb_information.hypertables WHERE hypertable_name = 'metrics';")
+        if not cursor.fetchone():
+            logger.info("Converting 'metrics' into a hypertable...")
+            try:
+                cursor.execute("SELECT create_hypertable('metrics', 'time', if_not_exists => TRUE);")
+                logger.info("Converted 'metrics' into a hypertable.")
+            except Exception:
+                logger.warning("Hypertable conversion skipped or failed", exc_info=True)
+        else:
+            logger.info("'metrics' is already a hypertable.")
+
+        cursor.close()
+        conn.close()
+    except Exception:
+        logger.error("Metrics DB init failed", exc_info=True)
+
+
+def run_migrations():
+    logger.info("Starting migrations...")
+    init_inventory()
+    init_metrics()
+    logger.info("Database init complete.")
             print("'metrics' table already exists.")
 
         # Convert to Hypertable
